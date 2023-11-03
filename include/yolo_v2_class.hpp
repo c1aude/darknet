@@ -20,12 +20,14 @@
 #define C_SHARP_MAX_OBJECTS 1000
 
 struct bbox_t {
+    unsigned int index;            // bbox index
     unsigned int x, y, w, h;       // (x,y) - top-left corner, (w, h) - width & height of bounded box
     float prob;                    // confidence - probability that the object was found correctly
     unsigned int obj_id;           // class of object - from range [0, classes-1]
     unsigned int track_id;         // tracking id for video (0 - untracked, 1 - inf - tracked object)
     unsigned int frames_counter;   // counter of frames on which the object was detected
     float x_3d, y_3d, z_3d;        // center of object (in Meters) if ZED 3D Camera is used
+    wchar_t obj_class;             // class of object
 };
 
 struct image_t {
@@ -37,6 +39,7 @@ struct image_t {
 
 struct bbox_t_container {
     bbox_t candidates[C_SHARP_MAX_OBJECTS];
+    size_t detect_count;
 };
 
 #ifdef __cplusplus
@@ -87,7 +90,7 @@ public:
     LIB_API int get_net_width() const;
     LIB_API int get_net_height() const;
     LIB_API int get_net_color_depth() const;
-
+    
     LIB_API std::vector<bbox_t> tracking_id(std::vector<bbox_t> cur_bbox_vec, bool const change_history = true,
                                                 int const frames_story = 5, int const max_dist = 40);
 
@@ -107,7 +110,7 @@ public:
     }
 
 #ifdef OPENCV
-    std::vector<bbox_t> detect(cv::Mat mat, float thresh = 0.2, bool use_mean = false)
+    LIB_API std::vector<bbox_t> detect(cv::Mat mat, float thresh = 0.2, bool use_mean = false)
     {
         if(mat.data == NULL)
             throw std::runtime_error("Image is empty");
@@ -224,7 +227,7 @@ public:
 
         send_json_custom(send_str.c_str(), port, timeout);
         return true;
-    }
+    }    
 };
 // --------------------------------------------------------------------------------
 
